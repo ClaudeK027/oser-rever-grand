@@ -92,6 +92,7 @@ export default function TicketPage() {
   const handleDownloadPDF = async () => {
     if (!ticketRef.current) return;
     setDownloading(true);
+    await new Promise(r => setTimeout(r, 100));
 
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
@@ -137,27 +138,50 @@ export default function TicketPage() {
           .ticket-card { box-shadow: none !important; border: 2px solid #1a1a1a !important; break-inside: avoid; }
         }
 
+        /* Mode téléchargement : on force les dimensions PC (landscape) pour une capture identique */
+        .is-downloading {
+          overflow: visible !important;
+          width: 800px !important;
+        }
+        .is-downloading .ticket-card {
+          transform: none !important;
+          scale: 1 !important;
+          width: 768px !important;
+          min-width: 768px !important;
+          max-width: 768px !important;
+          margin: 0 !important;
+        }
+        .is-downloading .mobile-landscape-container {
+          height: auto !important;
+          width: 800px !important;
+          display: block !important;
+        }
+
         /* Rotation paysage sur mobile portrait */
         @media (max-width: 768px) {
-          .mobile-landscape-container {
-            height: 500px; /* Espace pour le billet pivoté */
+          .ticket-wrapper:not(.is-downloading) {
+            padding: 1rem !important;
+          }
+          .ticket-wrapper:not(.is-downloading) .mobile-landscape-container {
+            height: 75vh;
             display: flex;
             align-items: center;
             justify-content: center;
           }
-          .ticket-card {
+          .ticket-wrapper:not(.is-downloading) .ticket-card {
             transform: rotate(90deg);
-            width: 768px !important;
+            width: 700px !important;
             max-width: none !important;
-            scale: 0.45;
+            scale: 0.85;
             flex-shrink: 0;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8) !important;
           }
-          @media (max-width: 400px) { .ticket-card { scale: 0.4; } }
-          @media (max-width: 350px) { .ticket-card { scale: 0.35; } }
+          @media (max-height: 700px) { .ticket-wrapper:not(.is-downloading) .ticket-card { scale: 0.7; } }
+          @media (max-width: 350px) { .ticket-wrapper:not(.is-downloading) .ticket-card { scale: 0.75; } }
         }
       `}</style>
 
-      <div className="ticket-wrapper min-h-screen bg-night-950 flex flex-col items-center justify-center p-4 md:p-12 overflow-hidden">
+      <div className={`ticket-wrapper min-h-screen bg-night-950 flex flex-col items-center justify-center p-4 md:p-12 overflow-hidden ${downloading ? "is-downloading" : ""}`}>
         {/* Download button */}
         <button
           onClick={handleDownloadPDF}
@@ -177,167 +201,167 @@ export default function TicketPage() {
             ═══════════════════════════════════════ */}
         <div className="mobile-landscape-container w-full flex items-center justify-center">
           <div ref={ticketRef} className="ticket-card w-full max-w-3xl bg-[#faf8f4] overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] relative">
-            
+
             {/* ── Perforation décorative (côté droit) ── */}
             <div className="absolute right-[88px] top-0 bottom-0 w-0 border-r-2 border-dashed border-black/10 z-10" />
 
-          <div className="flex">
-            {/* ── CORPS PRINCIPAL ── */}
-            <div className="flex-1 pr-[100px]">
-              
-              {/* En-tête doré */}
-              <div className="bg-gradient-to-r from-[#1a1a1a] via-[#2a2520] to-[#1a1a1a] px-8 py-5 flex items-center gap-4">
-                <div className="bg-white p-1.5 rounded-sm flex-shrink-0">
+            <div className="flex">
+              {/* ── CORPS PRINCIPAL ── */}
+              <div className="flex-1 pr-[100px]">
+
+                {/* En-tête doré */}
+                <div className="bg-gradient-to-r from-[#1a1a1a] via-[#2a2520] to-[#1a1a1a] px-8 py-5 flex items-center gap-4">
+                  <div className="bg-white p-1.5 rounded-sm flex-shrink-0">
+                    <Image
+                      src="/assets/logo-mini.png?v=4"
+                      alt="ORG"
+                      width={32}
+                      height={32}
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#d4a843]/60 font-bold">
+                      Conférence
+                    </p>
+                    <h1 className="text-xl md:text-2xl font-serif font-bold text-white tracking-wide leading-tight">
+                      OSER RÊVER GRAND
+                    </h1>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-2xl md:text-3xl font-serif font-bold text-[#d4a843] leading-none">
+                      30.07
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold mt-0.5">
+                      Juillet 2026
+                    </p>
+                  </div>
+                </div>
+
+                {/* Bande horaire */}
+                <div className="bg-[#d4a843] px-8 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/60 font-bold">
+                      Horaire
+                    </span>
+                    <span className="text-sm font-bold text-[#1a1a1a] font-mono tracking-wider">
+                      16h30 — 18h30
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/60 font-bold">
+                      Accès
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-[#1a1a1a] font-bold bg-white/30 px-2 py-0.5 rounded-full">
+                      Entrée Libre
+                    </span>
+                  </div>
+                </div>
+
+                {/* Lieu */}
+                <div className="px-8 py-4 border-b border-black/5 flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-[#d4a843] mt-0.5" />
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-black/30 font-bold mb-0.5">
+                      Lieu
+                    </p>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">
+                      Centre de Formation et de Perfectionnement Basile Ondimba
+                    </p>
+                    <p className="text-xs text-black/40 mt-0.5">Libreville, Gabon</p>
+                  </div>
+                </div>
+
+                {/* Informations participant */}
+                <div className="px-8 py-5 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
+                        Nom
+                      </p>
+                      <p className="text-base font-serif font-bold text-[#1a1a1a] uppercase tracking-wide">
+                        {data.nom}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
+                        Prénom(s)
+                      </p>
+                      <p className="text-base font-serif font-bold text-[#1a1a1a] uppercase tracking-wide">
+                        {data.prenom}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
+                        Email
+                      </p>
+                      <p className="text-xs text-black/60 truncate">
+                        {data.email}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
+                        Téléphone
+                      </p>
+                      <p className="text-xs text-black/60 font-mono">
+                        {data.telephone}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer du billet */}
+                <div className="px-8 py-3 bg-[#f0ede6] flex items-center justify-between">
+                  <p className="text-[9px] uppercase tracking-[0.3em] text-black/25 font-bold italic">
+                    Rêver, Oser, Devenir
+                  </p>
+                  <div className="text-right">
+                    <p className="text-[9px] uppercase tracking-[0.15em] text-black/30 font-bold">
+                      Billet
+                    </p>
+                    <p className="text-sm font-mono font-bold text-[#1a1a1a] tracking-wider">
+                      {ticketNumber(data.id)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── SOUCHE (côté droit, séparée par la perforation) ── */}
+              <div className="w-[88px] bg-[#1a1a1a] flex flex-col items-center justify-between py-5 px-2 flex-shrink-0">
+                {/* Texte vertical "DÉCHIRER À L'ENTRÉE" */}
+                <p
+                  className="text-[7px] uppercase tracking-[0.3em] text-white/20 font-bold"
+                  style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                >
+                  Déchirer à l'entrée
+                </p>
+
+                {/* QR Code */}
+                <div className="bg-white rounded-lg p-1.5">
                   <Image
-                    src="/assets/logo-mini.png?v=4"
-                    alt="ORG"
-                    width={32}
-                    height={32}
+                    src={qrUrl}
+                    alt="QR Code"
+                    width={64}
+                    height={64}
                     className="object-contain"
                     unoptimized
                   />
                 </div>
-                <div className="flex-1">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#d4a843]/60 font-bold">
-                    Conférence
-                  </p>
-                  <h1 className="text-xl md:text-2xl font-serif font-bold text-white tracking-wide leading-tight">
-                    OSER RÊVER GRAND
-                  </h1>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-2xl md:text-3xl font-serif font-bold text-[#d4a843] leading-none">
-                    30.07
-                  </p>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold mt-0.5">
-                    Juillet 2026
-                  </p>
-                </div>
-              </div>
 
-              {/* Bande horaire */}
-              <div className="bg-[#d4a843] px-8 py-2 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/60 font-bold">
-                    Horaire
-                  </span>
-                  <span className="text-sm font-bold text-[#1a1a1a] font-mono tracking-wider">
-                    16h30 — 18h30
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/60 font-bold">
-                    Accès
-                  </span>
-                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#1a1a1a] font-bold bg-white/30 px-2 py-0.5 rounded-full">
-                    Entrée Libre
-                  </span>
-                </div>
-              </div>
-
-              {/* Lieu */}
-              <div className="px-8 py-4 border-b border-black/5 flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-[#d4a843] mt-0.5" />
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-black/30 font-bold mb-0.5">
-                    Lieu
-                  </p>
-                  <p className="text-sm font-semibold text-[#1a1a1a]">
-                    Centre de Formation et de Perfectionnement Basile Ondimba
-                  </p>
-                  <p className="text-xs text-black/40 mt-0.5">Libreville, Gabon</p>
-                </div>
-              </div>
-
-              {/* Informations participant */}
-              <div className="px-8 py-5 space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
-                      Nom
-                    </p>
-                    <p className="text-base font-serif font-bold text-[#1a1a1a] uppercase tracking-wide">
-                      {data.nom}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
-                      Prénom(s)
-                    </p>
-                    <p className="text-base font-serif font-bold text-[#1a1a1a] uppercase tracking-wide">
-                      {data.prenom}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
-                      Email
-                    </p>
-                    <p className="text-xs text-black/60 truncate">
-                      {data.email}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-black/30 font-bold mb-1">
-                      Téléphone
-                    </p>
-                    <p className="text-xs text-black/60 font-mono">
-                      {data.telephone}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer du billet */}
-              <div className="px-8 py-3 bg-[#f0ede6] flex items-center justify-between">
-                <p className="text-[9px] uppercase tracking-[0.3em] text-black/25 font-bold italic">
-                  Rêver, Oser, Devenir
+                {/* Numéro vertical */}
+                <p
+                  className="text-[8px] font-mono text-[#d4a843]/60 font-bold"
+                  style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                >
+                  {ticketNumber(data.id)}
                 </p>
-                <div className="text-right">
-                  <p className="text-[9px] uppercase tracking-[0.15em] text-black/30 font-bold">
-                    Billet
-                  </p>
-                  <p className="text-sm font-mono font-bold text-[#1a1a1a] tracking-wider">
-                    {ticketNumber(data.id)}
-                  </p>
-                </div>
               </div>
-            </div>
-
-            {/* ── SOUCHE (côté droit, séparée par la perforation) ── */}
-            <div className="w-[88px] bg-[#1a1a1a] flex flex-col items-center justify-between py-5 px-2 flex-shrink-0">
-              {/* Texte vertical "DÉCHIRER À L'ENTRÉE" */}
-              <p
-                className="text-[7px] uppercase tracking-[0.3em] text-white/20 font-bold"
-                style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-              >
-                Déchirer à l'entrée
-              </p>
-
-              {/* QR Code */}
-              <div className="bg-white rounded-lg p-1.5">
-                <Image
-                  src={qrUrl}
-                  alt="QR Code"
-                  width={64}
-                  height={64}
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
-
-              {/* Numéro vertical */}
-              <p
-                className="text-[8px] font-mono text-[#d4a843]/60 font-bold"
-                style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-              >
-                {ticketNumber(data.id)}
-              </p>
             </div>
           </div>
         </div>
-      </div>
 
         {/* Infos supplémentaires (non imprimées) */}
         <div className="no-print mt-6 text-center space-y-1">
