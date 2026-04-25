@@ -337,6 +337,7 @@ export default function TicketPage() {
             </div>
           </div>
         </div>
+      </div>
 
         {/* Infos supplémentaires (non imprimées) */}
         <div className="no-print mt-6 text-center space-y-1">
