@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { EASE_PREMIUM } from "@/lib/animations";
 import { useToast, Toast } from "@/components/ui/toast";
+import { ConfirmModal } from "@/components/ui";
 
 /**
  * ═══════════════════════════════════════════════════
@@ -126,11 +127,49 @@ export default function AdminDashboard() {
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [sendingId, setSendingId] = React.useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [sendingBulk, setSendingBulk] = React.useState(false);
+
+  // État du Modal de confirmation
+  const [confirmModal, setConfirmModal] = React.useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant: "danger" | "info";
+    confirmText: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    variant: "info",
+    confirmText: "Confirmer"
+  });
+
+  /* ── Sélection ── */
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sorted.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sorted.map((i) => i.id)));
+    }
+  };
 
   /* ── Récupérer les inscriptions ── */
   const fetchInscriptions = React.useCallback(async () => {
     setLoading(true);
     setError(null);
+    setSelectedIds(new Set()); // Reset selection on refresh
     try {
       const response = await fetch("/api/admin/inscriptions");
 
@@ -210,9 +249,21 @@ export default function AdminDashboard() {
   };
 
   /* ── Supprimer une inscription ── */
+  const askDelete = (id: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Supprimer l'inscription ?",
+      message: "Cette action est irréversible. L'inscrit sera définitivement retiré de la base de données.",
+      variant: "danger",
+      confirmText: "Supprimer",
+      onConfirm: () => {
+        handleDelete(id);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet inscrit ? Cette action est irréversible.")) return;
-    
     setDeletingId(id);
     try {
       const response = await fetch(`/api/admin/inscriptions/${id}`, {
@@ -229,6 +280,12 @@ export default function AdminDashboard() {
 
       // Mettre à jour localement
       setInscriptions((prev) => prev.filter((i) => i.id !== id));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      show("Inscription supprimée", "success");
     } catch (err: any) {
       show(err.message || "Erreur lors de la suppression", "error");
     } finally {
@@ -264,6 +321,60 @@ export default function AdminDashboard() {
       show(err.message || "Erreur lors de l'envoi", "error");
     } finally {
       setSendingId(null);
+    }
+  };
+
+  /* ── Envoyer à la sélection ── */
+  const askBulkSend = () => {
+    if (selectedIds.size === 0) return;
+    setConfirmModal({
+      isOpen: true,
+      title: "Envoi groupé",
+      message: `Voulez-vous envoyer l'invitation à ${selectedIds.size} inscrits ?`,
+      variant: "info",
+      confirmText: "Envoyer tout",
+      onConfirm: () => {
+        handleBulkSend();
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
+
+  const handleBulkSend = async () => {
+    setSendingBulk(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    const idsToProcess = Array.from(selectedIds);
+    
+    for (const id of idsToProcess) {
+      try {
+        const response = await fetch("/api/admin/inscriptions/send-ticket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+        if (response.ok) {
+          successCount++;
+          // Update local state for each success
+          setInscriptions((prev) =>
+            prev.map((i) => (i.id === id ? { ...i, status: "envoyée" } : i))
+          );
+        } else {
+          failCount++;
+        }
+      } catch (e) {
+        failCount++;
+      }
+    }
+
+    setSendingBulk(false);
+    setSelectedIds(new Set());
+
+    if (failCount === 0) {
+      show(`${successCount} billets envoyés avec succès !`, "success");
+    } else {
+      show(`${successCount} envoyés, ${failCount} échecs.`, successCount > 0 ? "info" : "error");
     }
   };
 
@@ -380,16 +491,34 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <button
-            onClick={fetchInscriptions}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
-            />
-            Actualiser
-          </button>
+          <div className="flex items-center gap-3">
+            <AnimatePresence>
+              {selectedIds.size > 0 && (
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onClick={askBulkSend}
+                  disabled={sendingBulk}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider disabled:opacity-50"
+                >
+                  <Send className={`w-3.5 h-3.5 ${sendingBulk ? "animate-spin" : ""}`} />
+                  Envoyer à la sélection ({selectedIds.size})
+                </motion.button>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={fetchInscriptions}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+              />
+              Actualiser
+            </button>
+          </div>
         </div>
 
         {/* Search bar */}
@@ -423,6 +552,14 @@ export default function AdminDashboard() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/5">
+                  <th className="px-4 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={sorted.length > 0 && selectedIds.size === sorted.length}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-white/10 bg-night-950 text-accent focus:ring-accent/20 transition-all cursor-pointer"
+                    />
+                  </th>
                   {[
                     { key: "created_at" as SortKey, label: "Date" },
                     { key: "nom" as SortKey, label: "Nom" },
@@ -462,7 +599,7 @@ export default function AdminDashboard() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
+                    <td colSpan={8} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-accent/40 animate-spin" />
                         <Text variant="body-sm" className="text-white/30">
@@ -473,7 +610,7 @@ export default function AdminDashboard() {
                   </tr>
                 ) : sorted.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
+                    <td colSpan={8} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Users className="w-6 h-6 text-white/10" />
                         <Text variant="body-sm" className="text-white/30">
@@ -489,9 +626,17 @@ export default function AdminDashboard() {
                     <tr
                       key={item.id}
                       className={`border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors ${
-                        index % 2 === 0 ? "" : "bg-white/[0.01]"
+                        selectedIds.has(item.id) ? "bg-accent/5" : index % 2 === 0 ? "" : "bg-white/[0.01]"
                       }`}
                     >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="w-4 h-4 rounded border-white/10 bg-night-950 text-accent focus:ring-accent/20 transition-all cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 md:px-6 py-3.5">
                         <Text
                           variant="caption"
@@ -547,7 +692,7 @@ export default function AdminDashboard() {
                             <span className="hidden md:inline">Billet</span>
                           </a>
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => askDelete(item.id)}
                             disabled={deletingId === item.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/5 border border-red-500/20 text-red-400/60 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10 transition-all duration-200 text-[10px] font-medium uppercase tracking-wider disabled:opacity-50"
                           >
@@ -560,7 +705,7 @@ export default function AdminDashboard() {
                           </button>
                           <button
                             onClick={() => handleSendTicket(item.id)}
-                            disabled={sendingId === item.id || item.status === "envoyée"}
+                            disabled={sendingId === item.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/5 border border-blue-500/20 text-blue-400/60 hover:text-blue-400 hover:border-blue-500/40 hover:bg-blue-500/10 transition-all duration-200 text-[10px] font-medium uppercase tracking-wider disabled:opacity-50"
                           >
                             {sendingId === item.id ? (
@@ -590,6 +735,7 @@ export default function AdminDashboard() {
               >
                 {sorted.length} résultat{sorted.length !== 1 ? "s" : ""}
                 {search && ` pour "${search}"`}
+                {selectedIds.size > 0 && ` — ${selectedIds.size} sélectionné(s)`}
               </Text>
               <Text
                 variant="caption"
@@ -789,6 +935,11 @@ export default function AdminDashboard() {
       </AnimatePresence>
 
       <Toast {...toast} onClose={hide} />
+      
+      <ConfirmModal
+        {...confirmModal}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </main>
   );
 }

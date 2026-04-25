@@ -22,3 +22,4 @@ export { Divider } from "./divider";
 export { AuroraBackground } from "./aurora-background";
 export { ScrollProgress } from "./scroll-progress";
 export { ScrollIndicator } from "./scroll-indicator";
+export { ConfirmModal } from "./confirm-modal";
