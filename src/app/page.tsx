@@ -631,15 +631,16 @@ export default function LandingPage() {
                     </motion.div>
                     
                     <motion.div variants={staggerChild}>
-                      <Button 
-                        variant="primary" 
-                        size="lg" 
-                        className="shadow-glow-accent group rounded-full px-8" 
-                        onClick={() => document.getElementById('reservation')?.scrollIntoView({ behavior: 'smooth' })}
-                      >
-                        M'inscrire pour être informé
-                        <Icon icon={ArrowRight} size="sm" className="ml-2 transition-transform group-hover:translate-x-1" />
-                      </Button>
+                      <Link href="/reservation">
+                        <Button 
+                          variant="primary" 
+                          size="lg" 
+                          className="shadow-glow-accent group rounded-full px-8" 
+                        >
+                          M'inscrire pour être informé
+                          <Icon icon={ArrowRight} size="sm" className="ml-2 transition-transform group-hover:translate-x-1" />
+                        </Button>
+                      </Link>
                     </motion.div>
                   </motion.div>
                 </BentoGridItem>
