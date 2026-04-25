@@ -1,0 +1,609 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM CSS — "Oser Rêver Grand" 2026
+   ═══════════════════════════════════════════════════════════════
+   
+   Ce fichier est le SANG du Design Système.
+   Il transporte les Design Tokens partout via des CSS variables.
+   
+   Architecture :
+     1. Design Tokens     → :root variables (le code génétique)
+     2. Base Layer         → Reset + Typographie par défaut + A11y
+     3. Component Layer    → Classes réutilisables
+     4. Utility Layer      → Helpers spécifiques
+   
+   Référence : /DESIGN_SYSTEM_ARCHITECTURE.md
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS (Variables CSS)
+   Ref: DESIGN_SYSTEM_ARCHITECTURE.md §1.1–§1.7
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* ── Couleurs Sémantiques ── */
+  --color-bg-primary: #FDFBF7;
+  --color-bg-secondary: #FAF5ED;
+  --color-bg-inverse: #0A0A14;
+  --color-text-primary: #141422;
+  --color-text-muted: #56566F; /* night-400 — WCAG AA 6.5:1 sur bg cream */
+  --color-text-inverse: #FDFBF7;
+  --color-accent: #EAB308;
+  --color-accent-hover: #CA9A06;
+  --color-accent-active: #A37B04;
+  --color-accent-foreground: #553F02;
+  --color-accent-text: #B8860B; /* Assombri pour WCAG AA sur fond beige */
+
+  /* ── Canaux RGB pour alpha compositing (rgba(var(--x), 0.3)) ── */
+  --accent-rgb: 234, 179, 8;
+  --night-rgb: 10, 10, 20;
+  --cream-rgb: 253, 251, 247;
+
+  /* ── Accent alphas (échelle standardisée) ── */
+  --accent-alpha-05: rgba(var(--accent-rgb), 0.05);
+  --accent-alpha-10: rgba(var(--accent-rgb), 0.10);
+  --accent-alpha-15: rgba(var(--accent-rgb), 0.15);
+  --accent-alpha-20: rgba(var(--accent-rgb), 0.20);
+  --accent-alpha-25: rgba(var(--accent-rgb), 0.25);
+  --accent-alpha-30: rgba(var(--accent-rgb), 0.30);
+  --accent-alpha-40: rgba(var(--accent-rgb), 0.40);
+
+  /* ── Gradients signature ── */
+  --gradient-gold: linear-gradient(135deg, #EAB308 0%, #FFD033 100%);
+  --gradient-gold-mirror: linear-gradient(135deg, #EAB308 0%, #FFD033 50%, #EAB308 100%);
+  --gradient-light-fade: linear-gradient(135deg, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 100%);
+
+  /* ── Surfaces & Cartes ── */
+  --color-surface-card: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-overlay: rgba(10, 10, 20, 0.6);
+
+  /* ── Bordures ── */
+  --color-border-default: rgba(0, 0, 0, 0.08);
+  --color-border-subtle: rgba(0, 0, 0, 0.04);
+  --color-border-accent: var(--accent-alpha-30);
+
+  /* ── États de Feedback ── */
+  --color-state-success: #22C55E;
+  --color-state-error: #E5737A;    /* Rose désaturé, pas de rouge agressif */
+  --color-state-warning: #F59E0B;
+  --color-state-info: #3B82F6;
+
+  /* ── Glassmorphism ── */
+  --glass-bg-light: rgba(255, 255, 255, 0.72);
+  --glass-bg-dark: rgba(10, 10, 20, 0.65);
+  --glass-border-light: rgba(255, 255, 255, 0.2);
+  --glass-border-dark: rgba(255, 255, 255, 0.08);
+
+  /* ── Typographie ── */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+
+  /* ── Espacements ── */
+  --container-max: 75rem;          /* 1200px */
+  --container-narrow: 45rem;       /* 720px */
+  --section-gap: clamp(4rem, 8vw, 8rem);
+  --content-padding: clamp(1rem, 5vw, 6rem);
+
+  /* ── Transitions (§1.7) ── */
+  --duration-fast: 150ms;
+  --duration-medium: 300ms;
+  --duration-slow: 600ms;
+  --duration-cinematic: 1000ms;
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+
+  /* ── Border Radius (§1.5) ── */
+  --radius-none: 0;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  /* ── Élévation (§1.4) ── */
+  --shadow-elevation-1:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 4px 12px rgba(0,0,0,0.06);
+  --shadow-elevation-2:
+    0 4px 12px rgba(0,0,0,0.06),
+    0 12px 32px rgba(0,0,0,0.1);
+  --shadow-elevation-3:
+    0 8px 24px rgba(0,0,0,0.1),
+    0 24px 64px rgba(0,0,0,0.16);
+  --inner-stroke: inset 0 0 0 1px rgba(0,0,0,0.04);
+  --inner-stroke-hover: inset 0 0 0 1px rgba(0,0,0,0.06);
+  --glow-gold: 0 0 20px var(--accent-alpha-25), 0 0 60px var(--accent-alpha-10);
+
+  /* ── Iconographie (§1.6) ── */
+  --icon-sm: 1rem;       /* 16px */
+  --icon-md: 1.25rem;    /* 20px */
+  --icon-lg: 1.5rem;     /* 24px */
+  --icon-stroke: 1.75;
+
+  /* ── Navbar heights (§1.10) ── */
+  --nav-h-compact: 64px;
+  --nav-h-expanded: 96px;
+
+  /* ── Aurora & Glow (§1.11) ── */
+  --blur-aurora: 180px;
+  --gradient-aurora:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(var(--accent-rgb), 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(var(--accent-rgb), 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #050509 0%, #0A0A14 50%, #141422 100%);
+  --shadow-glow-accent-sm: 0 0 20px var(--accent-alpha-20);
+  --shadow-glow-accent-md: 0 0 40px var(--accent-alpha-25), 0 0 80px var(--accent-alpha-10);
+  --shadow-glow-accent-lg: 0 0 60px var(--accent-alpha-30), 0 0 120px var(--accent-alpha-15);
+
+  /* ── Glass surfaces (navbar) ── */
+  --glass-nav-top: transparent;
+  --glass-nav-scrolled: rgba(var(--night-rgb), 0.72);
+}
+
+/* ── Dark Section (Hero, zones inversées) ── */
+.dark-section {
+  --color-bg-primary: #0A0A14;
+  --color-bg-secondary: #141422;
+  --color-text-primary: #FDFBF7;
+  --color-text-muted: rgba(var(--cream-rgb), 0.72); /* AA 7:1 sur night-950 */
+  --color-surface-card: rgba(255, 255, 255, 0.05);
+  --color-surface-elevated: rgba(255, 255, 255, 0.08);
+  --color-border-default: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --inner-stroke: inset 0 0 0 1px rgba(255,255,255,0.06);
+  --inner-stroke-hover: inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   2. BASE LAYER
+   Ref: DESIGN_SYSTEM_ARCHITECTURE.md §2 (A11y), §6 (Principes)
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  /* ── Reset global ── */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── Typographie ── */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: var(--color-text-primary);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+    max-width: 70ch;
+  }
+
+  /* ── Liens ── */
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--duration-medium) var(--ease-premium);
+  }
+
+  a:hover {
+    color: var(--color-accent);
+  }
+
+  /* ── Médias ── */
+  img, video, svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ── Accessibilité : Focus States (§2.2) ── */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Empêcher la suppression de focus sans remplacement */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* ── Accessibilité : Reduced Motion (§2.4) ── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ── Sélection de texte ── */
+  ::selection {
+    background-color: var(--accent-alpha-20);
+    color: var(--color-text-primary);
+  }
+
+  /* ── Texture de grain (Premium Editorial Look) ── */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   3. COMPONENT LAYER
+   Composants CSS réutilisables (avant les composants React)
+   ───────────────────────────────────────────────────────────── */
+@layer components {
+  /* ── Conteneurs (§3.3) ── */
+  .container-editorial {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--content-padding);
+    padding-right: var(--content-padding);
+  }
+
+  .container-narrow {
+    width: 100%;
+    max-width: var(--container-narrow);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--content-padding);
+    padding-right: var(--content-padding);
+  }
+
+  .container-full {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* ── Section padding ── */
+  .section-padding {
+    padding-top: var(--section-gap);
+    padding-bottom: var(--section-gap);
+    scroll-margin-top: 100px; /* Offset pour la Navbar fixe */
+  }
+
+  /* Pour les ancres directes sur IDs */
+  [id^="sprint-"] {
+    scroll-margin-top: 100px;
+  }
+
+  /* ── Grille Éditoriale (§3.2) ── */
+  .grid-editorial {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .grid-editorial {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 24px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .grid-editorial {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 24px;
+    }
+  }
+
+  /* ── Carte avec Inner Stroke (§1.4) ── */
+  .card-elevated {
+    background: var(--color-surface-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-elevation-1), var(--inner-stroke);
+    transition:
+      box-shadow var(--duration-medium) var(--ease-premium),
+      transform var(--duration-medium) var(--ease-premium);
+  }
+
+  .card-elevated:hover {
+    box-shadow: var(--shadow-elevation-2), var(--inner-stroke-hover);
+    transform: translateY(-2px);
+  }
+
+  /* ── Carte Glass (Glassmorphism contrôlé) ── */
+  .card-glass {
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: var(--radius-lg);
+  }
+
+  .dark-section .card-glass {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+  }
+
+  /* ── Bouton Primaire ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-primary);
+    background: var(--gradient-gold);
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all var(--duration-medium) var(--ease-premium);
+    box-shadow: 0 2px 8px -2px var(--accent-alpha-30);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 4px 16px -4px var(--accent-alpha-40),
+      0 0 24px -8px var(--accent-alpha-20);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px -1px var(--accent-alpha-30);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* ── Bouton Secondaire ── */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: 1.5px solid var(--color-border-default);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all var(--duration-medium) var(--ease-premium);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--accent-alpha-05);
+  }
+
+  .btn-secondary:active {
+    background: var(--accent-alpha-15);
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--radius-pill);
+    background: var(--accent-alpha-10);
+    color: var(--color-accent-text);
+    border: 1px solid var(--accent-alpha-15);
+  }
+
+  /* ── Overline (surtitre éditorial) ── */
+  .overline-text {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent-text);
+  }
+
+  /* ── Séparateur doré ── */
+  .divider-gold {
+    width: 3rem;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), transparent);
+    border-radius: var(--radius-pill);
+    border: none;
+  }
+
+  .divider-subtle {
+    width: 100%;
+    height: 1px;
+    background: var(--color-border-default);
+    border: none;
+  }
+
+  /* ── Grille Bento ── */
+  .bento-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  /* ── Nombre statistique ── */
+  .stat-number {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   4. UTILITY LAYER
+   ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* ── Dégradé texte or ── */
+  .text-gradient-gold {
+    background: var(--gradient-gold-mirror);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-light {
+    background: var(--gradient-light-fade);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Hero overlay ── */
+  .hero-overlay {
+    position: relative;
+  }
+
+  .hero-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 10, 20, 0.8) 0%,
+      rgba(10, 10, 20, 0.4) 50%,
+      rgba(10, 10, 20, 0.7) 100%
+    );
+    z-index: 1;
+  }
+
+  /* ── Truncate ── */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Hide scrollbar ── */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* ── Skeleton Shimmer (Sprint 5) ── */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Respecter prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after {
+      animation: none;
+    }
+  }
+
+  /* ── Lueur Premium Border ── */
+  .glow-border {
+    position: relative;
+  }
+  
+  .glow-border::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--color-accent), transparent, var(--color-accent));
+    opacity: 0;
+    z-index: -1;
+    border-radius: inherit;
+    transition: opacity var(--duration-medium) var(--ease-premium);
+  }
+
+  .glow-border:hover::after {
+    opacity: 0.25;
+  }
+}
