@@ -128,7 +128,7 @@ export default function TicketPage() {
 
   return (
     <>
-      {/* ── Styles d'impression ── */}
+      {/* ── Styles d'impression et mobile ── */}
       <style jsx global>{`
         @media print {
           body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -136,9 +136,28 @@ export default function TicketPage() {
           .ticket-wrapper { padding: 0 !important; min-height: auto !important; background: white !important; }
           .ticket-card { box-shadow: none !important; border: 2px solid #1a1a1a !important; break-inside: avoid; }
         }
+
+        /* Rotation paysage sur mobile portrait */
+        @media (max-width: 768px) {
+          .mobile-landscape-container {
+            height: 500px; /* Espace pour le billet pivoté */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .ticket-card {
+            transform: rotate(90deg);
+            width: 768px !important;
+            max-width: none !important;
+            scale: 0.45;
+            flex-shrink: 0;
+          }
+          @media (max-width: 400px) { .ticket-card { scale: 0.4; } }
+          @media (max-width: 350px) { .ticket-card { scale: 0.35; } }
+        }
       `}</style>
 
-      <div className="ticket-wrapper min-h-screen bg-night-950 flex flex-col items-center justify-center p-6 md:p-12">
+      <div className="ticket-wrapper min-h-screen bg-night-950 flex flex-col items-center justify-center p-4 md:p-12 overflow-hidden">
         {/* Download button */}
         <button
           onClick={handleDownloadPDF}
@@ -156,10 +175,11 @@ export default function TicketPage() {
         {/* ═══════════════════════════════════════
             TICKET CARD
             ═══════════════════════════════════════ */}
-        <div ref={ticketRef} className="ticket-card w-full max-w-3xl bg-[#faf8f4] overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] relative">
-          
-          {/* ── Perforation décorative (côté droit) ── */}
-          <div className="absolute right-[88px] top-0 bottom-0 w-0 border-r-2 border-dashed border-black/10 z-10" />
+        <div className="mobile-landscape-container w-full flex items-center justify-center">
+          <div ref={ticketRef} className="ticket-card w-full max-w-3xl bg-[#faf8f4] overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] relative">
+            
+            {/* ── Perforation décorative (côté droit) ── */}
+            <div className="absolute right-[88px] top-0 bottom-0 w-0 border-r-2 border-dashed border-black/10 z-10" />
 
           <div className="flex">
             {/* ── CORPS PRINCIPAL ── */}
