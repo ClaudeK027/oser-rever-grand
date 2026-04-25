@@ -13,12 +13,12 @@ export async function POST(request: Request) {
         {
           prenom: body.prenom,
           nom: body.nom,
-          email: body.email,
+          email: body.email || null,
           telephone: body.telephone,
           transaction_reference: body.transaction_reference,
           status: "enregistré",
         },
-        { onConflict: "email" }
+        { onConflict: "telephone" }
       );
 
     if (error) {

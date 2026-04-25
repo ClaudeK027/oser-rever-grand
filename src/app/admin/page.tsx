@@ -18,6 +18,9 @@ import {
   Ticket,
   Trash2,
   Send,
+  Check,
+  FileText,
+  Mail,
 } from "lucide-react";
 import { EASE_PREMIUM } from "@/lib/animations";
 import { useToast, Toast } from "@/components/ui/toast";
@@ -507,11 +510,20 @@ export default function AdminDashboard() {
                 </motion.button>
               )}
             </AnimatePresence>
+            <a
+              href="/admin/guests"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-accent hover:border-accent/40 hover:bg-accent/5 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Liste Invités</span>
+            </a>
 
             <button
               onClick={fetchInscriptions}
               disabled={loading}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 hover:bg-white/10 transition-all duration-200 text-[11px] font-medium uppercase tracking-wider disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}

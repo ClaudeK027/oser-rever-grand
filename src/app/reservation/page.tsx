@@ -229,7 +229,7 @@ export default function ReservationPage() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Input 
-                    label="Prénom" 
+                    label="Prénom *" 
                     placeholder="Ex: Jean" 
                     required
                     value={formData.prenom || ""}
@@ -237,7 +237,7 @@ export default function ReservationPage() {
                     className="bg-night-950/50"
                   />
                   <Input 
-                    label="Nom" 
+                    label="Nom *" 
                     placeholder="Ex: Kouka" 
                     required
                     value={formData.nom || ""}
@@ -247,17 +247,16 @@ export default function ReservationPage() {
                 </div>
                 
                 <Input 
-                  label="Email" 
+                  label="Email (optionnel)" 
                   type="email" 
                   placeholder="votre@email.com" 
-                  required
                   value={formData.email || ""}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="bg-night-950/50"
                 />
                 
                 <Input 
-                  label="Téléphone" 
+                  label="Téléphone *" 
                   type="tel" 
                   placeholder="+241 XX XX XX XX" 
                   required
