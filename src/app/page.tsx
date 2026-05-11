@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { HeroSection } from "@/components/ui/hero-section";
 import Image from "next/image";
+import Link from "next/link";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { VisionCard } from "@/components/ui/vision-card";
 import { Heading, Text, SectionTitle } from "@/components/ui/typography";
