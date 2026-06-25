@@ -25,8 +25,11 @@ import { staggerContainer, staggerChild, defaultViewport, EASE_PREMIUM } from "@
  * Étape 3 : Confirmation de l'inscription
  */
 
-const AIRTEL_MONEY_NUMBER = "+241 76 23 30 85";
-const AIRTEL_MONEY_RAW = "0076233085";
+const PAYMENT_METHODS = {
+  airtel: { label: "Airtel Money", number: "+241 76 23 30 85", raw: "+24176233085" },
+  moov: { label: "Moov Money", number: "+241 60 15 18 90", raw: "+24160151890" },
+} as const;
+type PaymentMethod = keyof typeof PAYMENT_METHODS;
 const MONTANT = "3 000 FCFA";
 
 type Step = "info" | "payment" | "success";
@@ -59,6 +62,7 @@ export default function ReservationPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("airtel");
 
   const [formData, setFormData] = React.useState({
     prenom: "",
@@ -117,10 +121,10 @@ export default function ReservationPage() {
     }
   };
 
-  /* ── Copier le numéro Airtel Money ── */
+  /* ── Copier le numéro de paiement ── */
   const handleCopyNumber = async () => {
     try {
-      await navigator.clipboard.writeText("+24176233085");
+      await navigator.clipboard.writeText(PAYMENT_METHODS[paymentMethod].raw);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -178,7 +182,7 @@ export default function ReservationPage() {
              </Heading>
              <Text variant="body-sm" className="text-white/50 text-[13px]">
                {step === "info" && "Renseignez vos informations pour commencer."}
-               {step === "payment" && `Envoyez ${MONTANT} via Airtel Money puis validez.`}
+               {step === "payment" && `Envoyez ${MONTANT} via ${PAYMENT_METHODS[paymentMethod].label} puis validez.`}
                {step === "success" && "Votre inscription a bien été enregistrée."}
              </Text>
           </div>
@@ -313,12 +317,30 @@ export default function ReservationPage() {
                   </button>
                 </div>
 
-                {/* Instructions de paiement — COMPACT */}
+                {/* Sélecteur opérateur */}
+                <div className="flex gap-2">
+                  {(Object.keys(PAYMENT_METHODS) as PaymentMethod[]).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => { setPaymentMethod(key); setCopied(false); }}
+                      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-300 border ${
+                        paymentMethod === key
+                          ? "bg-accent/15 border-accent/50 text-accent shadow-[0_0_12px_-3px_rgba(234,179,8,0.3)]"
+                          : "bg-white/5 border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"
+                      }`}
+                    >
+                      {PAYMENT_METHODS[key].label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Instructions de paiement */}
                 <div className="bg-accent/5 border border-accent/15 rounded-xl p-4">
                   <Text variant="body-sm" className="text-white/80 leading-relaxed text-[13px]">
-                    Envoyez <span className="text-accent font-bold">{MONTANT}</span> via <span className="font-bold text-white">Airtel Money</span> au :
+                    Envoyez <span className="text-accent font-bold">{MONTANT}</span> via <span className="font-bold text-white">{PAYMENT_METHODS[paymentMethod].label}</span> au :
                   </Text>
-                  
+
                   {/* Numéro avec bouton copier */}
                   <button
                     type="button"
@@ -326,7 +348,7 @@ export default function ReservationPage() {
                     className="w-full flex items-center justify-between bg-night-950/80 border border-accent/30 rounded-lg px-4 py-2.5 mt-3 group hover:border-accent/50 transition-all duration-300"
                   >
                     <span className="font-mono text-lg md:text-xl font-bold text-accent tracking-wider">
-                      {AIRTEL_MONEY_NUMBER}
+                      {PAYMENT_METHODS[paymentMethod].number}
                     </span>
                     <span className="flex items-center gap-1 text-white/40 group-hover:text-accent transition-colors">
                       {copied ? (
@@ -359,7 +381,7 @@ export default function ReservationPage() {
                     className="w-full h-12 bg-night-950/80 border border-accent/30 rounded-lg px-4 text-white text-base font-mono placeholder:text-white/20 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300 disabled:opacity-50"
                   />
                   <p className="text-white/40 text-[10px] font-sans leading-relaxed">
-                    Ce numéro se trouve dans le SMS de confirmation Airtel Money reçu après votre paiement.
+                    Ce numéro se trouve dans le SMS de confirmation {PAYMENT_METHODS[paymentMethod].label} reçu après votre paiement.
                   </p>
                 </div>
 

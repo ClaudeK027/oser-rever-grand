@@ -158,6 +158,14 @@ export const intervenants: Intervenant[] = [
       linkedin: "https://www.linkedin.com/in/georfmiguiamabamba/"
     }
   },
+  {
+    id: "int-6",
+    nom: "AYA",
+    prenom: "Daliana",
+    role: "Entrepreneure dans l'Électronique",
+    description: "Entrepreneure passionnée par l'électronique, elle œuvre à démocratiser l'accès aux technologies et à inspirer une nouvelle génération d'innovateurs au Gabon.",
+    image: "/infos%20site%20internet/speaker-6.jpeg",
+  },
 ];
 
 // ─── Vision ───
